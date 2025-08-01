@@ -1,26 +1,22 @@
 <template>
-  <v-container fluid class="pa-0 game-container">
-    <v-row no-gutters>
-      <v-col cols="12" class="d-flex align-center">
-        <iframe
-          ref="unityIframe"
-          :src="unityBundlePath"
-          class="unity-iframe"
-          allowfullscreen
-          allow="fullscreen"
-          @load="onUnityLoaded"
-        />
-        <v-btn
-          v-if="!loading"
-          :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-          color="primary"
-          variant="elevated"
-          class="fullscreen-btn"
-          @click="toggleFullscreen"
-        >
-        </v-btn>
-      </v-col>
-    </v-row>
+  <div class="game-wrapper">
+    <iframe
+      ref="unityIframe"
+      :src="unityBundlePath"
+      class="unity-iframe"
+      allowfullscreen
+      allow="fullscreen"
+      @load="onUnityLoaded"
+    />
+    <v-btn
+      v-if="!loading"
+      :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+      color="primary"
+      variant="elevated"
+      class="fullscreen-btn"
+      @click="toggleFullscreen"
+    >
+    </v-btn>
     
     <v-overlay
       v-model="loading"
@@ -42,7 +38,7 @@
         <p class="text-subtitle-1 text-grey mt-2">Please wait while we prepare your gaming experience</p>
       </v-card>
     </v-overlay>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -95,12 +91,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.game-container {
+.game-wrapper {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   height: calc(100vh - 64px);
-  position: relative;
+  background-color: #000;
 }
 
 .unity-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   border: none;

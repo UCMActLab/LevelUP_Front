@@ -22,7 +22,7 @@ importers:
         version: 4.5.1(vue@3.5.18)
       vuetify:
         specifier: ^3.5.0
-        version: 3.9.2(vue@3.5.18)
+        version: 3.9.3(vue@3.5.18)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
@@ -1057,8 +1057,8 @@ packages:
       typescript:
         optional: true
 
-  vuetify@3.9.2:
-    resolution: {integrity: sha512-Pax7YCgbE5SArY8CDM0A9dTVHnG1oU79eIBA+FEEg3dDFV7bc+0AppJJLfG2+aoaBlJf2UH7tOCflJ/U23YU1Q==}
+  vuetify@3.9.3:
+    resolution: {integrity: sha512-0eruHdmRoAMBo/08RLDkTdtdu1vfkx+/PurUIDW2tz/k2GCp51e7KwgCn4uVyzH88KRgf2PKiz5UI5f93Xn05w==}
     engines: {node: ^12.20 || >=14.13}
     peerDependencies:
       typescript: '>=4.7'
@@ -2017,7 +2017,7 @@ snapshots:
       '@vue/server-renderer': 3.5.18(vue@3.5.18)
       '@vue/shared': 3.5.18
 
-  vuetify@3.9.2(vue@3.5.18):
+  vuetify@3.9.3(vue@3.5.18):
     dependencies:
       vue: 3.5.18
 
