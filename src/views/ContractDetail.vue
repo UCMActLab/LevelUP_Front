@@ -14,7 +14,18 @@
       </v-col>
     </v-row>
 
-    <v-row v-if="contract">
+    <v-row v-if="loading">
+      <v-col cols="12" class="text-center">
+        <v-progress-circular
+          indeterminate
+          color="primary"
+          size="64"
+        ></v-progress-circular>
+        <p class="mt-4 text-h6">Loading resource details...</p>
+      </v-col>
+    </v-row>
+    
+    <v-row v-else-if="contract">
       <v-col cols="12">
         <v-card
           elevation="2"
@@ -120,7 +131,7 @@
     <v-row v-else>
       <v-col cols="12">
         <v-alert type="error">
-          Contract not found
+          Resource not found or failed to load
         </v-alert>
       </v-col>
     </v-row>
@@ -128,7 +139,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { contractStore } from '@/stores/contracts'
 
@@ -142,13 +153,26 @@ const props = defineProps({
   }
 })
 
-const contract = computed(() => {
-  return contractStore.getContractById(props.id)
+const contract = ref(null)
+const loading = ref(true)
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    contract.value = await contractStore.getContractById(props.id)
+  } catch (error) {
+    console.error('Error loading contract:', error)
+  } finally {
+    loading.value = false
+  }
 })
 
 const formatDate = (dateObj) => {
   if (dateObj?.$date) {
     return new Date(dateObj.$date).toLocaleString()
+  }
+  if (dateObj) {
+    return new Date(dateObj).toLocaleString()
   }
   return ''
 }

@@ -93,12 +93,12 @@ onUnmounted(() => {
 <style scoped>
 .game-wrapper {
   position: fixed;
-  top: 64px;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   width: 100%;
-  height: calc(100vh - 64px);
+  height: 100vh;
   background-color: #000;
 }
 

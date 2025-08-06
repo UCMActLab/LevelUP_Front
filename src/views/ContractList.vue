@@ -2,9 +2,20 @@
   <v-container class="py-8">
     <v-row>
       <v-col cols="12">
-        <div class="d-flex align-center mb-6">
-          <v-icon color="primary" size="40" class="mr-3">mdi-help-circle-outline</v-icon>
-          <h1 class="text-h3 font-weight-bold">Questions</h1>
+        <div class="d-flex align-center justify-space-between mb-6">
+          <div class="d-flex align-center">
+            <v-icon color="primary" size="40" class="mr-3">mdi-help-circle-outline</v-icon>
+            <h1 class="text-h3 font-weight-bold">Resources</h1>
+          </div>
+          <v-btn
+            color="success"
+            size="large"
+            variant="elevated"
+            prepend-icon="mdi-plus"
+            @click="createResource"
+          >
+            Create Resource
+          </v-btn>
         </div>
       </v-col>
     </v-row>
@@ -19,7 +30,7 @@
             <v-text-field
               v-model="search"
               prepend-inner-icon="mdi-magnify"
-              label="Search questions..."
+              label="Search resources..."
               single-line
               hide-details
               variant="outlined"
@@ -92,15 +103,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { contractStore } from '@/stores/contracts'
 
 const router = useRouter()
 const search = ref('')
 
+onMounted(async () => {
+  await contractStore.fetchContracts()
+})
+
 const headers = [
-  { title: 'Question', key: 'title', width: '40%' },
+  { title: 'Resource', key: 'title', width: '40%' },
   { title: 'Country', key: 'country', align: 'center' },
   { title: 'Reference', key: 'conversationRef', align: 'center' },
   { title: 'Created', key: 'createdAt', align: 'center' },
@@ -126,5 +141,9 @@ const viewContract = (id) => {
 
 const editContract = (id) => {
   router.push({ name: 'contract-edit', params: { id } })
+}
+
+const createResource = () => {
+  router.push({ name: 'contract-create' })
 }
 </script>
