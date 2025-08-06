@@ -38,15 +38,6 @@ RUN echo 'server {\
         try_files $uri $uri/ /index.html;\
     }\
     \
-    # API proxy to backend (optional, if needed)\
-    location /api {\
-        proxy_pass ${BACKEND_URL};\
-        proxy_set_header Host $host;\
-        proxy_set_header X-Real-IP $remote_addr;\
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\
-        proxy_set_header X-Forwarded-Proto $scheme;\
-    }\
-    \
     # Cache static assets\
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {\
         expires 1y;\
