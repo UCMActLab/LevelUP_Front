@@ -49,26 +49,36 @@ RUN echo 'server {\
     }\
     \
     # Unity Build files - Handle precompressed brotli files\
-    # Serve .br files with correct headers\
+    # Serve .br files with correct headers and disable cache issues\
     location ~* \\.data\\.br$ {\
-        add_header Content-Encoding br;\
-        add_header Content-Type application/octet-stream;\
-        add_header Cache-Control "max-age=31536000";\
-        add_header Access-Control-Allow-Origin "*";\
+        add_header Content-Encoding br always;\
+        add_header Content-Type application/octet-stream always;\
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;\
+        add_header Pragma "no-cache" always;\
+        add_header Expires "0" always;\
+        add_header Access-Control-Allow-Origin "*" always;\
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;\
+        add_header Access-Control-Allow-Headers "Range" always;\
     }\
     \
-    location ~* \\.js\\.br$ {\
-        add_header Content-Encoding br;\
-        add_header Content-Type application/javascript;\
-        add_header Cache-Control "max-age=31536000";\
-        add_header Access-Control-Allow-Origin "*";\
+    location ~* \\.framework\\.js\\.br$ {\
+        add_header Content-Encoding br always;\
+        add_header Content-Type application/javascript always;\
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;\
+        add_header Pragma "no-cache" always;\
+        add_header Expires "0" always;\
+        add_header Access-Control-Allow-Origin "*" always;\
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;\
     }\
     \
     location ~* \\.wasm\\.br$ {\
-        add_header Content-Encoding br;\
-        add_header Content-Type application/wasm;\
-        add_header Cache-Control "max-age=31536000";\
-        add_header Access-Control-Allow-Origin "*";\
+        add_header Content-Encoding br always;\
+        add_header Content-Type application/wasm always;\
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;\
+        add_header Pragma "no-cache" always;\
+        add_header Expires "0" always;\
+        add_header Access-Control-Allow-Origin "*" always;\
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;\
     }\
     \
     # Unity Build files - Gzip compressed\
@@ -91,14 +101,16 @@ RUN echo 'server {\
     }\
     \
     # Unity WebGL loader and framework files\
-    location ~* \.loader\.js$ {\
-        add_header Content-Type application/javascript;\
-        add_header Cache-Control "public, max-age=31536000, immutable";\
+    location ~* /Build/.*\.loader\.js$ {\
+        add_header Content-Type application/javascript always;\
+        add_header Cache-Control "no-cache" always;\
+        add_header Access-Control-Allow-Origin "*" always;\
     }\
     \
-    location ~* \.framework\.js$ {\
-        add_header Content-Type application/javascript;\
-        add_header Cache-Control "public, max-age=31536000, immutable";\
+    location ~* /Bundle/.*\.loader\.js$ {\
+        add_header Content-Type application/javascript always;\
+        add_header Cache-Control "no-cache" always;\
+        add_header Access-Control-Allow-Origin "*" always;\
     }\
     \
     # Cache static assets\

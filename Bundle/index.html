@@ -63,6 +63,10 @@
         productName: "LevelUp_Game",
         productVersion: "0.1.0",
         showBanner: unityShowBanner,
+        // Disable Unity caching to avoid Cache API issues
+        cacheControl: function(url) { return "no-cache"; },
+        // Disable the cache completely
+        useBrowserCaching: false,
       };
 
       // By default, Unity keeps WebGL canvas render target size matched with
@@ -116,7 +120,15 @@
                 };
 
               }).catch((message) => {
-                alert(message);
+                console.error('Unity loading error:', message);
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-warning").innerHTML = 
+                  '<div style="color: red; text-align: center; padding: 20px;">' +
+                  '<h3>Error loading Unity content</h3>' +
+                  '<p>The game failed to load. This might be due to browser compatibility issues.</p>' +
+                  '<p>Error details: ' + message + '</p>' +
+                  '<p>Please try refreshing the page or use a different browser.</p>' +
+                  '</div>';
               });
             };
 
