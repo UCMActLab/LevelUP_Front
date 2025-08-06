@@ -45,6 +45,55 @@ RUN echo 'server {\
         try_files $uri $uri/ /index.html;\
     }\
     \
+    # Unity Build files - Brotli compressed\
+    location ~* \.data\.br$ {\
+        add_header Content-Encoding br;\
+        add_header Content-Type application/octet-stream;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    location ~* \.js\.br$ {\
+        add_header Content-Encoding br;\
+        add_header Content-Type application/javascript;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    location ~* \.wasm\.br$ {\
+        add_header Content-Encoding br;\
+        add_header Content-Type application/wasm;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    # Unity Build files - Gzip compressed\
+    location ~* \.data\.gz$ {\
+        add_header Content-Encoding gzip;\
+        add_header Content-Type application/octet-stream;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    location ~* \.js\.gz$ {\
+        add_header Content-Encoding gzip;\
+        add_header Content-Type application/javascript;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    location ~* \.wasm\.gz$ {\
+        add_header Content-Encoding gzip;\
+        add_header Content-Type application/wasm;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    # Unity WebGL loader and framework files\
+    location ~* \.loader\.js$ {\
+        add_header Content-Type application/javascript;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
+    location ~* \.framework\.js$ {\
+        add_header Content-Type application/javascript;\
+        add_header Cache-Control "public, max-age=31536000, immutable";\
+    }\
+    \
     # Cache static assets\
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {\
         expires 1y;\
@@ -62,7 +111,7 @@ RUN echo 'server {\
     add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;\
     add_header Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization" always;\
     \
-    # Gzip compression\
+    # Gzip compression for non-precompressed files\
     gzip on;\
     gzip_vary on;\
     gzip_min_length 1024;\
