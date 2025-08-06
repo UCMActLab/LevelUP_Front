@@ -33,6 +33,9 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
+# Create modules directory and configure nginx for brotli static files
+RUN mkdir -p /etc/nginx/conf.d
+
 # Create nginx configuration for SPA and port 3000
 RUN echo 'server {\
     listen 3000;\
@@ -45,23 +48,27 @@ RUN echo 'server {\
         try_files $uri $uri/ /index.html;\
     }\
     \
-    # Unity Build files - Brotli compressed\
-    location ~* \.data\.br$ {\
+    # Unity Build files - Handle precompressed brotli files\
+    # Serve .br files with correct headers\
+    location ~* \\.data\\.br$ {\
         add_header Content-Encoding br;\
         add_header Content-Type application/octet-stream;\
-        add_header Cache-Control "public, max-age=31536000, immutable";\
+        add_header Cache-Control "max-age=31536000";\
+        add_header Access-Control-Allow-Origin "*";\
     }\
     \
-    location ~* \.js\.br$ {\
+    location ~* \\.js\\.br$ {\
         add_header Content-Encoding br;\
         add_header Content-Type application/javascript;\
-        add_header Cache-Control "public, max-age=31536000, immutable";\
+        add_header Cache-Control "max-age=31536000";\
+        add_header Access-Control-Allow-Origin "*";\
     }\
     \
-    location ~* \.wasm\.br$ {\
+    location ~* \\.wasm\\.br$ {\
         add_header Content-Encoding br;\
         add_header Content-Type application/wasm;\
-        add_header Cache-Control "public, max-age=31536000, immutable";\
+        add_header Cache-Control "max-age=31536000";\
+        add_header Access-Control-Allow-Origin "*";\
     }\
     \
     # Unity Build files - Gzip compressed\

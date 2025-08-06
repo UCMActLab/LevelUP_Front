@@ -23,7 +23,14 @@ window.APP_CONFIG = {
 };
 EOF
 
+# List Unity Build directory for debugging
+echo "📁 Unity Build files found:"
+ls -la /usr/share/nginx/html/Bundle/Build/ 2>/dev/null || echo "No Bundle/Build directory found"
+
 echo "✅ Configuration updated successfully!"
+
+# Test nginx config
+nginx -t
 
 # Start nginx
 exec nginx -g 'daemon off;'
