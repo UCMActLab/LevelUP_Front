@@ -14,7 +14,10 @@ RUN npm install -g pnpm && \
 # Copy source code
 COPY . .
 
-# Build the application for production
+# Copy docker environment file
+COPY .env.docker .env.production
+
+# Build the application for production with docker config
 RUN pnpm run build -- --mode production
 
 # Production stage with Nginx
@@ -25,6 +28,10 @@ RUN apk add --no-cache curl
 
 # Copy built application
 COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Create nginx configuration for SPA and port 3000
 RUN echo 'server {\
