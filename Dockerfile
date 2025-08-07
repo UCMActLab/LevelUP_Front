@@ -44,27 +44,42 @@ RUN echo 'server { \
     access_log /var/log/nginx/access.log; \
     error_log /var/log/nginx/error.log; \
     \
-    location /Build/ { \
+    location /Bundle/Build/ { \
         add_header Access-Control-Allow-Origin "*" always; \
         add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
         add_header Access-Control-Allow-Headers "Range, Content-Encoding, Content-Type" always; \
+        \
+        location ~ \.framework\.js$ { \
+            add_header Content-Type "application/javascript" always; \
+            add_header Content-Encoding br always; \
+            try_files $uri.br @404; \
+        } \
+        \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
+            add_header Content-Encoding br always; \
+            try_files $uri.br @404; \
+        } \
+        \
+        location ~ \.wasm$ { \
+            add_header Content-Type "application/wasm" always; \
+            add_header Content-Encoding br always; \
+            try_files $uri.br @404; \
+        } \
+        \
+        location ~ \.loader\.js$ { \
+            add_header Content-Type "application/javascript" always; \
+            try_files $uri @404; \
+        } \
         \
         location ~ \.br$ { \
             add_header Content-Encoding br always; \
             add_header Vary "Accept-Encoding" always; \
         } \
-        \
-        location ~ \.js$ { \
-            add_header Content-Type "application/javascript" always; \
-        } \
-        location ~ \.wasm$ { \
-            add_header Content-Type "application/wasm" always; \
-        } \
-        location ~ \.data$ { \
-            add_header Content-Type "application/octet-stream" always; \
-        } \
-        \
-        try_files $uri $uri.br =404; \
+    } \
+    \
+    location @404 { \
+        return 404; \
     } \
     \
     location / { \
