@@ -1,5 +1,5 @@
 const env = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8079',
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'https://levelup.fundacionmaldita.es/api',
   environment: import.meta.env.VITE_APP_ENV || 'local',
   appName: import.meta.env.VITE_APP_NAME || 'LevelUP',
   apiTimeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000,

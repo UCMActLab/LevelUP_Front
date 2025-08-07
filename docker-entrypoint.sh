@@ -4,7 +4,7 @@
 set -e
 
 # Default values
-API_URL=${API_URL:-"http://levelup:8080"}
+API_URL=${API_URL:-"https://levelup.fundacionmaldita.es/api"}
 
 echo "🔧 Configuring runtime environment..."
 echo "📡 API_URL: $API_URL"
@@ -13,7 +13,7 @@ echo "📡 API_URL: $API_URL"
 echo "🔄 Updating API configuration in built files..."
 
 # Find and replace the API URL in the built files
-find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|http://levelup:8080|$API_URL|g" {} \;
+find /usr/share/nginx/html -name "*.js" -type f -exec sed -i "s|https://levelup.fundacionmaldita.es/api|$API_URL|g" {} \;
 
 # Create runtime config file that can be loaded by the app
 cat > /usr/share/nginx/html/config.js << EOF

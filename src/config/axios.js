@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8079',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://levelup.fundacionmaldita.es/api',
   timeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 30000,
   headers: {
     'Content-Type': 'application/json',
