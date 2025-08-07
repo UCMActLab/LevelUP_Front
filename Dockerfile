@@ -1,133 +1,143 @@
 # Multi-stage build for Vue.js + Vite application with Unity WebGL
 FROM node:18-alpine AS build
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install pnpm globally and install dependencies
+# Install dependencies
 RUN npm install -g pnpm && \
     pnpm install --frozen-lockfile
 
-# Copy source code INCLUDING Unity Build files
+# Copy ALL source files
 COPY . .
 
 # Copy docker environment file if exists
 RUN if [ -f .env.docker ]; then cp .env.docker .env.production; fi
 
-# Build the application for production
+# Build the application
 RUN pnpm run build
 
-# Ensure Unity Build files are in dist (if they exist in public)
-RUN if [ -d "public/Build" ] && [ ! -d "dist/Build" ]; then \
-        cp -r public/Build dist/Build; \
-    fi && \
-    if [ -d "public/Bundle" ] && [ ! -d "dist/Bundle" ]; then \
-        cp -r public/Bundle dist/Bundle; \
-    fi
-
-# Production stage with Nginx
+# Production stage
 FROM nginx:alpine
 
-# Install curl and brotli for decompression
+# Install brotli for decompression
 RUN apk add --no-cache curl brotli
 
 # Copy built application
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# CRITICAL: Decompress all .br files
-RUN echo "=== Decompressing Brotli files ===" && \
+# CRITICAL: Remove .br files and keep only decompressed versions
+RUN echo "=== Processing Unity files ===" && \
+    # First, decompress all .br files \
     find /usr/share/nginx/html -name "*.br" -type f | while read file; do \
-        echo "Processing: $file"; \
-        # Get the filename without .br extension \
+        echo "Decompressing: $file"; \
         output="${file%.br}"; \
-        # Decompress the file \
-        brotli -d -f "$file" -o "$output"; \
-        # Keep the .br file as backup \
-        echo "Decompressed to: $output"; \
+        brotli -d -f "$file" -o "$output" 2>/dev/null || echo "Already decompressed or error"; \
     done && \
-    echo "=== Decompression complete ===" && \
-    # List all Build files to verify \
-    echo "=== Unity Build files ===" && \
-    find /usr/share/nginx/html -path "*/Build/*" -type f -exec ls -lh {} \;
+    # Then REMOVE all .br files to force Unity to use uncompressed \
+    echo "=== Removing .br files ===" && \
+    find /usr/share/nginx/html -name "*.br" -type f -delete && \
+    # Create symlink from /Build to /Bundle/Build if needed \
+    if [ -d "/usr/share/nginx/html/Bundle/Build" ] && [ ! -e "/usr/share/nginx/html/Build" ]; then \
+        ln -s /usr/share/nginx/html/Bundle/Build /usr/share/nginx/html/Build; \
+        echo "Created symlink: /Build -> /Bundle/Build"; \
+    fi && \
+    # List final structure \
+    echo "=== Final Unity files ===" && \
+    ls -lh /usr/share/nginx/html/Bundle/Build/ 2>/dev/null || echo "No Bundle/Build" && \
+    ls -lh /usr/share/nginx/html/Build/ 2>/dev/null || echo "No Build"
 
-# Create nginx configuration for serving decompressed files
-RUN echo 'server { \
-    listen 3000; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    \
-    access_log /var/log/nginx/access.log; \
-    error_log /var/log/nginx/error.log; \
-    \
-    # Serve both compressed and uncompressed versions \
-    location /Build/ { \
-        add_header Access-Control-Allow-Origin "*" always; \
-        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
-        add_header Access-Control-Allow-Headers "Range, Content-Type" always; \
-        add_header Cache-Control "public, max-age=31536000, immutable" always; \
-        \
-        # Try uncompressed first, then .br version \
-        try_files $uri $uri.br =404; \
-        \
-        # Set correct MIME types for Unity files \
-        location ~ \.js$ { \
-            add_header Content-Type "application/javascript" always; \
-        } \
-        location ~ \.wasm$ { \
-            add_header Content-Type "application/wasm" always; \
-        } \
-        location ~ \.data$ { \
-            add_header Content-Type "application/octet-stream" always; \
-        } \
-    } \
-    \
-    # Same for Bundle/Build if that path exists \
-    location /Bundle/Build/ { \
-        add_header Access-Control-Allow-Origin "*" always; \
-        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
-        add_header Access-Control-Allow-Headers "Range, Content-Type" always; \
-        add_header Cache-Control "public, max-age=31536000, immutable" always; \
-        \
-        try_files $uri $uri.br =404; \
-        \
-        location ~ \.js$ { \
-            add_header Content-Type "application/javascript" always; \
-        } \
-        location ~ \.wasm$ { \
-            add_header Content-Type "application/wasm" always; \
-        } \
-        location ~ \.data$ { \
-            add_header Content-Type "application/octet-stream" always; \
-        } \
-    } \
-    \
-    # Handle client-side routing for Vue SPA \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    \
-    # Cache static assets \
-    location ~* \.(css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
-    } \
-    \
-    # Security headers \
-    add_header X-Frame-Options "SAMEORIGIN" always; \
-    add_header X-Content-Type-Options "nosniff" always; \
-    add_header X-XSS-Protection "1; mode=block" always; \
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always; \
-    \
-    # Enable gzip for text files \
-    gzip on; \
-    gzip_vary on; \
-    gzip_min_length 1024; \
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json; \
-}' > /etc/nginx/conf.d/default.conf
+# Update Unity loader to remove .br extension references
+RUN find /usr/share/nginx/html -name "*.loader.js" -type f | while read loader; do \
+        echo "Patching loader: $loader"; \
+        # Remove .br extension from file references \
+        sed -i 's/\.br"/""/g' "$loader"; \
+        sed -i "s/\.br'/'/g" "$loader"; \
+        sed -i 's/\.br,/,/g' "$loader"; \
+        sed -i 's/\.br}/}/g' "$loader"; \
+    done
+
+# Simple nginx configuration
+RUN cat > /etc/nginx/conf.d/default.conf << 'NGINX_CONFIG'
+server {
+    listen 3000;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # Logging
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    # MIME types for Unity
+    types {
+        application/wasm wasm;
+        application/javascript js;
+        application/octet-stream data;
+    }
+
+    # Unity Build files location (both paths)
+    location /Build/ {
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+
+        # Specific MIME types
+        location ~ \.wasm$ {
+            add_header Content-Type "application/wasm" always;
+        }
+        location ~ \.js$ {
+            add_header Content-Type "application/javascript" always;
+        }
+        location ~ \.data$ {
+            add_header Content-Type "application/octet-stream" always;
+        }
+    }
+
+    location /Bundle/Build/ {
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+
+        location ~ \.wasm$ {
+            add_header Content-Type "application/wasm" always;
+        }
+        location ~ \.js$ {
+            add_header Content-Type "application/javascript" always;
+        }
+        location ~ \.data$ {
+            add_header Content-Type "application/octet-stream" always;
+        }
+    }
+
+    # Template data
+    location /Bundle/TemplateData/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+    }
+
+    # Vue SPA routing
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Static assets
+    location /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # Enable gzip for text files
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/json;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+}
+NGINX_CONFIG
 
 # Expose port 3000
 EXPOSE 3000
