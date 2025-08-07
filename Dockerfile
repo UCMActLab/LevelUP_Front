@@ -33,73 +33,57 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY --from=build /app/public/Build /usr/share/nginx/html/Build 2>/dev/null || true
 
 # Create nginx configuration WITHOUT brotli modules
-RUN cat > /etc/nginx/conf.d/default.conf << 'EOF'
-server {
-    listen 3000;
-    server_name localhost;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    # Logging
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
-
-    # Handle Unity Build files with proper headers
-    location /Build/ {
-        # CORS headers for Unity
-        add_header Access-Control-Allow-Origin "*" always;
-        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;
-        add_header Access-Control-Allow-Headers "Range, Content-Encoding, Content-Type" always;
-
-        # Handle .br files (Brotli compressed)
-        location ~ \.br$ {
-            # Remove .br extension when serving
-            rewrite ^(.+)\.br$ $1 last;
-
-            # Add Brotli encoding header
-            add_header Content-Encoding br always;
-            add_header Vary "Accept-Encoding" always;
-        }
-
-        # Specific MIME types for Unity files
-        location ~ \.js$ {
-            add_header Content-Type "application/javascript" always;
-        }
-        location ~ \.wasm$ {
-            add_header Content-Type "application/wasm" always;
-        }
-        location ~ \.data$ {
-            add_header Content-Type "application/octet-stream" always;
-        }
-
-        # Try files with and without .br extension
-        try_files $uri $uri.br =404;
-    }
-
-    # Handle client-side routing for Vue SPA
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Cache static assets
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-
-    # Enable gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json application/wasm;
-}
-EOF
+RUN echo 'server { \
+    listen 3000; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    \
+    access_log /var/log/nginx/access.log; \
+    error_log /var/log/nginx/error.log; \
+    \
+    location /Build/ { \
+        add_header Access-Control-Allow-Origin "*" always; \
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
+        add_header Access-Control-Allow-Headers "Range, Content-Encoding, Content-Type" always; \
+        \
+        location ~ \.br$ { \
+            add_header Content-Encoding br always; \
+            add_header Vary "Accept-Encoding" always; \
+        } \
+        \
+        location ~ \.js$ { \
+            add_header Content-Type "application/javascript" always; \
+        } \
+        location ~ \.wasm$ { \
+            add_header Content-Type "application/wasm" always; \
+        } \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
+        } \
+        \
+        try_files $uri $uri.br =404; \
+    } \
+    \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    \
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    add_header X-Frame-Options "SAMEORIGIN" always; \
+    add_header X-Content-Type-Options "nosniff" always; \
+    add_header X-XSS-Protection "1; mode=block" always; \
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always; \
+    \
+    gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1024; \
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json application/wasm; \
+}' > /etc/nginx/conf.d/default.conf
 
 # Remove any existing default.conf
 RUN rm -f /etc/nginx/conf.d/default.conf.orig
