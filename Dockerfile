@@ -60,84 +60,68 @@ RUN find /usr/share/nginx/html -name "*.loader.js" -type f | while read loader; 
     done
 
 # Simple nginx configuration
-RUN cat > /etc/nginx/conf.d/default.conf << 'NGINX_CONFIG'
-server {
-    listen 3000;
-    server_name localhost;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    # Logging
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log;
-
-    # MIME types for Unity
-    types {
-        application/wasm wasm;
-        application/javascript js;
-        application/octet-stream data;
-    }
-
-    # Unity Build files location (both paths)
-    location /Build/ {
-        add_header Access-Control-Allow-Origin "*" always;
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
-
-        # Specific MIME types
-        location ~ \.wasm$ {
-            add_header Content-Type "application/wasm" always;
-        }
-        location ~ \.js$ {
-            add_header Content-Type "application/javascript" always;
-        }
-        location ~ \.data$ {
-            add_header Content-Type "application/octet-stream" always;
-        }
-    }
-
-    location /Bundle/Build/ {
-        add_header Access-Control-Allow-Origin "*" always;
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
-
-        location ~ \.wasm$ {
-            add_header Content-Type "application/wasm" always;
-        }
-        location ~ \.js$ {
-            add_header Content-Type "application/javascript" always;
-        }
-        location ~ \.data$ {
-            add_header Content-Type "application/octet-stream" always;
-        }
-    }
-
-    # Template data
-    location /Bundle/TemplateData/ {
-        add_header Cache-Control "public, max-age=31536000, immutable" always;
-    }
-
-    # Vue SPA routing
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    # Static assets
-    location /assets/ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    # Enable gzip for text files
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/json;
-
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-}
-NGINX_CONFIG
+RUN echo 'server { \
+    listen 3000; \
+    server_name localhost; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    \
+    access_log /var/log/nginx/access.log; \
+    error_log /var/log/nginx/error.log; \
+    \
+    location /Build/ { \
+        add_header Access-Control-Allow-Origin "*" always; \
+        add_header Cache-Control "public, max-age=31536000, immutable" always; \
+        add_header Content-Type "application/octet-stream" always; \
+        \
+        location ~ \.wasm$ { \
+            add_header Content-Type "application/wasm" always; \
+        } \
+        location ~ \.js$ { \
+            add_header Content-Type "application/javascript" always; \
+        } \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
+        } \
+    } \
+    \
+    location /Bundle/Build/ { \
+        add_header Access-Control-Allow-Origin "*" always; \
+        add_header Cache-Control "public, max-age=31536000, immutable" always; \
+        \
+        location ~ \.wasm$ { \
+            add_header Content-Type "application/wasm" always; \
+        } \
+        location ~ \.js$ { \
+            add_header Content-Type "application/javascript" always; \
+        } \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
+        } \
+    } \
+    \
+    location /Bundle/TemplateData/ { \
+        add_header Cache-Control "public, max-age=31536000, immutable" always; \
+    } \
+    \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+    \
+    location /assets/ { \
+        expires 1y; \
+        add_header Cache-Control "public, immutable"; \
+    } \
+    \
+    gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1024; \
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/json; \
+    \
+    add_header X-Frame-Options "SAMEORIGIN" always; \
+    add_header X-Content-Type-Options "nosniff" always; \
+    add_header X-XSS-Protection "1; mode=block" always; \
+}' > /etc/nginx/conf.d/default.conf
 
 # Expose port 3000
 EXPOSE 3000
