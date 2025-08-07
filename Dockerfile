@@ -20,21 +20,40 @@ RUN if [ -f .env.docker ]; then cp .env.docker .env.production; fi
 # Build the application for production
 RUN pnpm run build
 
-# Production stage with Nginx (sin módulos de brotli problemáticos)
+# Ensure Unity Build files are in dist (if they exist in public)
+RUN if [ -d "public/Build" ] && [ ! -d "dist/Build" ]; then \
+        cp -r public/Build dist/Build; \
+    fi && \
+    if [ -d "public/Bundle" ] && [ ! -d "dist/Bundle" ]; then \
+        cp -r public/Bundle dist/Bundle; \
+    fi
+
+# Production stage with Nginx
 FROM nginx:alpine
 
-# Install curl for health checks only
-RUN apk add --no-cache curl
+# Install curl and brotli for decompression
+RUN apk add --no-cache curl brotli
 
 # Copy built application
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy Unity Build files if they exist
-# Note: If Build folder doesn't exist in dist, we'll try to copy from public
-# Comment out the line below if you don't have Unity files
-# COPY --from=build /app/public/Build /usr/share/nginx/html/Build
+# CRITICAL: Decompress all .br files
+RUN echo "=== Decompressing Brotli files ===" && \
+    find /usr/share/nginx/html -name "*.br" -type f | while read file; do \
+        echo "Processing: $file"; \
+        # Get the filename without .br extension \
+        output="${file%.br}"; \
+        # Decompress the file \
+        brotli -d -f "$file" -o "$output"; \
+        # Keep the .br file as backup \
+        echo "Decompressed to: $output"; \
+    done && \
+    echo "=== Decompression complete ===" && \
+    # List all Build files to verify \
+    echo "=== Unity Build files ===" && \
+    find /usr/share/nginx/html -path "*/Build/*" -type f -exec ls -lh {} \;
 
-# Create nginx configuration WITHOUT brotli modules
+# Create nginx configuration for serving decompressed files
 RUN echo 'server { \
     listen 3000; \
     server_name localhost; \
@@ -44,66 +63,71 @@ RUN echo 'server { \
     access_log /var/log/nginx/access.log; \
     error_log /var/log/nginx/error.log; \
     \
+    # Serve both compressed and uncompressed versions \
+    location /Build/ { \
+        add_header Access-Control-Allow-Origin "*" always; \
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
+        add_header Access-Control-Allow-Headers "Range, Content-Type" always; \
+        add_header Cache-Control "public, max-age=31536000, immutable" always; \
+        \
+        # Try uncompressed first, then .br version \
+        try_files $uri $uri.br =404; \
+        \
+        # Set correct MIME types for Unity files \
+        location ~ \.js$ { \
+            add_header Content-Type "application/javascript" always; \
+        } \
+        location ~ \.wasm$ { \
+            add_header Content-Type "application/wasm" always; \
+        } \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
+        } \
+    } \
+    \
+    # Same for Bundle/Build if that path exists \
     location /Bundle/Build/ { \
         add_header Access-Control-Allow-Origin "*" always; \
         add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always; \
-        add_header Access-Control-Allow-Headers "Range, Content-Encoding, Content-Type" always; \
+        add_header Access-Control-Allow-Headers "Range, Content-Type" always; \
+        add_header Cache-Control "public, max-age=31536000, immutable" always; \
         \
-        location ~ \.framework\.js$ { \
+        try_files $uri $uri.br =404; \
+        \
+        location ~ \.js$ { \
             add_header Content-Type "application/javascript" always; \
-            add_header Content-Encoding br always; \
-            try_files $uri.br @404; \
         } \
-        \
-        location ~ \.data$ { \
-            add_header Content-Type "application/octet-stream" always; \
-            add_header Content-Encoding br always; \
-            try_files $uri.br @404; \
-        } \
-        \
         location ~ \.wasm$ { \
             add_header Content-Type "application/wasm" always; \
-            add_header Content-Encoding br always; \
-            try_files $uri.br @404; \
         } \
-        \
-        location ~ \.loader\.js$ { \
-            add_header Content-Type "application/javascript" always; \
-            try_files $uri @404; \
-        } \
-        \
-        location ~ \.br$ { \
-            add_header Content-Encoding br always; \
-            add_header Vary "Accept-Encoding" always; \
+        location ~ \.data$ { \
+            add_header Content-Type "application/octet-stream" always; \
         } \
     } \
     \
-    location @404 { \
-        return 404; \
-    } \
-    \
+    # Handle client-side routing for Vue SPA \
     location / { \
         try_files $uri $uri/ /index.html; \
     } \
     \
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
+    # Cache static assets \
+    location ~* \.(css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ { \
         expires 1y; \
         add_header Cache-Control "public, immutable"; \
     } \
     \
+    # Security headers \
     add_header X-Frame-Options "SAMEORIGIN" always; \
     add_header X-Content-Type-Options "nosniff" always; \
     add_header X-XSS-Protection "1; mode=block" always; \
     add_header Referrer-Policy "strict-origin-when-cross-origin" always; \
     \
+    # Enable gzip for text files \
     gzip on; \
     gzip_vary on; \
     gzip_min_length 1024; \
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json application/wasm; \
+    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json; \
 }' > /etc/nginx/conf.d/default.conf
-
-# Remove any existing default.conf
-RUN rm -f /etc/nginx/conf.d/default.conf.orig
 
 # Expose port 3000
 EXPOSE 3000
