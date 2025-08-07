@@ -29,8 +29,10 @@ RUN apk add --no-cache curl
 # Copy built application
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy Unity Build files if they exist in public folder
-COPY --from=build /app/public/Build /usr/share/nginx/html/Build 2>/dev/null || true
+# Copy Unity Build files if they exist
+# Note: If Build folder doesn't exist in dist, we'll try to copy from public
+# Comment out the line below if you don't have Unity files
+# COPY --from=build /app/public/Build /usr/share/nginx/html/Build
 
 # Create nginx configuration WITHOUT brotli modules
 RUN echo 'server { \
