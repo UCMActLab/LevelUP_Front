@@ -8,8 +8,8 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
-    <div id="unity-container" style="width: 100%;height: 100%">
-      <canvas id="unity-canvas" width=100% height=100%></canvas>
+    <div id="unity-container" style="width: 100%;height: 100%;">
+      <canvas id="unity-canvas" width=auto height=auto tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -52,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/final_test.loader.js";
+      var loaderUrl = buildUrl + "/21.10.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/final_test.data.br",
-        frameworkUrl: buildUrl + "/final_test.framework.js.br",
-        codeUrl: buildUrl + "/final_test.wasm.br",
+        dataUrl: buildUrl + "/21.10.data.br",
+        frameworkUrl: buildUrl + "/21.10.framework.js.br",
+        codeUrl: buildUrl + "/21.10.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "LevelUp_Game",
@@ -98,8 +98,8 @@
 
       } else {
         // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
+        canvas.style.width = "auto";
+        canvas.style.height = "auto";
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
