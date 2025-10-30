@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="TemplateData/style.css">
   </head>
   <body>
-    <div id="unity-container" style="width:100%; height: 100%;">
+    <div id="unity-container" style="width: 100%;height: 100%;">
       <canvas id="unity-canvas" width=auto height=auto></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
@@ -20,8 +20,8 @@
       <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">LevelUp_Game</div> -->
-      </div>
+        <div id="unity-build-title">LevelUp_Game</div>
+      </div> -->
     </div>
     <script>
       var canvas = document.querySelector("#unity-canvas");
@@ -52,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/29.10.loader.js";
+      var loaderUrl = buildUrl + "/30.10.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/29.10.data.br",
-        frameworkUrl: buildUrl + "/29.10.framework.js.br",
-        codeUrl: buildUrl + "/29.10.wasm.br",
+        dataUrl: buildUrl + "/30.10.data.br",
+        frameworkUrl: buildUrl + "/30.10.framework.js.br",
+        codeUrl: buildUrl + "/30.10.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "LevelUp_Game",
