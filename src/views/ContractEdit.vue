@@ -43,83 +43,89 @@
               <v-row>
                 <v-col cols="12">
                   <v-text-field
-                    v-model="formData.title"
-                    label="Question Title"
+                    v-model="formData.Headline"
+                    label="Headline"
                     :rules="[rules.required]"
                     variant="outlined"
-                    prepend-inner-icon="mdi-help-circle"
+                    prepend-inner-icon="mdi-format-title"
                     density="comfortable"
                   ></v-text-field>
                 </v-col>
-                
+
                 <v-col cols="12">
                   <v-textarea
-                    v-model="formData.description"
-                    label="Description"
+                    v-model="formData.Body"
+                    label="Body"
                     :rules="[rules.required]"
                     variant="outlined"
-                    rows="3"
+                    rows="4"
                     prepend-inner-icon="mdi-text"
                     density="comfortable"
                   ></v-textarea>
                 </v-col>
-                
+
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.country"
-                    label="Country"
+                  <v-select
+                    v-model="formData.Language"
+                    label="Language"
+                    :items="languageOptions"
                     :rules="[rules.required]"
                     variant="outlined"
-                    prepend-inner-icon="mdi-map-marker"
+                    prepend-inner-icon="mdi-translate"
                     density="comfortable"
-                  ></v-text-field>
+                  ></v-select>
                 </v-col>
-                
+
                 <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.conversationRef"
-                    label="Conversation Reference"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    prepend-inner-icon="mdi-message-text"
-                    density="comfortable"
-                  ></v-text-field>
+                  <v-switch
+                    v-model="formData.isTrue"
+                    label="Is this information true?"
+                    color="success"
+                    inset
+                    hide-details
+                  ></v-switch>
                 </v-col>
-                
+
                 <v-col cols="12">
-                  <v-expansion-panels class="mb-4">
-                    <v-expansion-panel>
-                      <v-expansion-panel-title>
-                        <v-icon class="mr-2">mdi-comment-check</v-icon>
-                        Answers (JSON Format)
-                      </v-expansion-panel-title>
-                      <v-expansion-panel-text>
-                        <v-textarea
-                          v-model="formData.answers"
-                          label="Answers"
-                          variant="outlined"
-                          rows="5"
-                          class="mt-4"
-                        ></v-textarea>
-                      </v-expansion-panel-text>
-                    </v-expansion-panel>
-                    
-                    <v-expansion-panel>
-                      <v-expansion-panel-title>
-                        <v-icon class="mr-2">mdi-folder-open</v-icon>
-                        Resources (JSON Format)
-                      </v-expansion-panel-title>
-                      <v-expansion-panel-text>
-                        <v-textarea
-                          v-model="formData.resources"
-                          label="Resources"
-                          variant="outlined"
-                          rows="4"
-                          class="mt-4"
-                        ></v-textarea>
-                      </v-expansion-panel-text>
-                    </v-expansion-panel>
-                  </v-expansion-panels>
+                  <v-text-field
+                    v-model="formData.Multimedia"
+                    label="Multimedia"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-image"
+                    density="comfortable"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.Source"
+                    label="Source"
+                    :rules="[rules.required]"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-source-branch"
+                    density="comfortable"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.Links"
+                    label="Links"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-link"
+                    density="comfortable"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="conversationJson"
+                    label="Conversation (JSON Format)"
+                    variant="outlined"
+                    rows="6"
+                    prepend-inner-icon="mdi-message-text"
+                    placeholder='[{"Messages": [{"Sender": "Sandra", "MessageList": ["..."]}]}]'
+                  ></v-textarea>
                 </v-col>
               </v-row>
             </v-form>
@@ -201,14 +207,25 @@ const snackbarColor = ref('success')
 const contract = ref(null)
 const loading = ref(true)
 
+const conversationJson = ref('')
+
 const formData = ref({
-  title: '',
-  description: '',
-  country: '',
-  conversationRef: '',
-  answers: '',
-  resources: ''
+  Headline: '',
+  Body: '',
+  Language: 'es',
+  isTrue: false,
+  Multimedia: '',
+  Source: '',
+  Links: '',
+  Conversation: []
 })
+
+const languageOptions = [
+  { title: 'Español', value: 'es' },
+  { title: 'English', value: 'en' },
+  { title: 'Français', value: 'fr' },
+  { title: 'Deutsch', value: 'de' }
+]
 
 const rules = {
   required: value => !!value || 'Field is required'
@@ -220,6 +237,10 @@ onMounted(async () => {
     contract.value = await contractStore.getContractById(props.id)
     if (contract.value) {
       formData.value = { ...contract.value }
+      // Convert Conversation array to JSON string for editing
+      if (contract.value.Conversation && Array.isArray(contract.value.Conversation)) {
+        conversationJson.value = JSON.stringify(contract.value.Conversation, null, 2)
+      }
     }
   } catch (error) {
     console.error('Error loading contract:', error)
@@ -231,11 +252,23 @@ onMounted(async () => {
 const saveContract = async () => {
   if (form.value.validate()) {
     try {
+      // Parse conversation JSON if provided
+      if (conversationJson.value) {
+        try {
+          formData.value.Conversation = JSON.parse(conversationJson.value)
+        } catch (e) {
+          snackbarText.value = 'Invalid JSON format for Conversation'
+          snackbarColor.value = 'error'
+          snackbar.value = true
+          return
+        }
+      }
+
       await contractStore.updateContract(props.id, formData.value)
       snackbarText.value = 'Resource updated successfully!'
       snackbarColor.value = 'success'
       snackbar.value = true
-      
+
       setTimeout(() => {
         router.push({ name: 'contract-detail', params: { id: props.id } })
       }, 1500)

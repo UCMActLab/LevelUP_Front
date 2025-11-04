@@ -32,84 +32,93 @@
               <v-row>
                 <v-col cols="12">
                   <v-text-field
-                    v-model="formData.title"
-                    label="Resource Title"
+                    v-model="formData.Headline"
+                    label="Headline"
                     :rules="[rules.required]"
                     variant="outlined"
-                    prepend-inner-icon="mdi-help-circle"
+                    prepend-inner-icon="mdi-format-title"
                     density="comfortable"
-                    placeholder="Enter the title for your resource"
+                    placeholder="Enter the headline for this resource"
                   ></v-text-field>
-                </v-col>
-                
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="formData.description"
-                    label="Description"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    rows="3"
-                    prepend-inner-icon="mdi-text"
-                    placeholder="Provide a detailed description of the resource"
-                  ></v-textarea>
-                </v-col>
-                
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.country"
-                    label="Country"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    prepend-inner-icon="mdi-map-marker"
-                    density="comfortable"
-                    placeholder="e.g., España"
-                  ></v-text-field>
-                </v-col>
-                
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="formData.conversationRef"
-                    label="Conversation Reference"
-                    :rules="[rules.required]"
-                    variant="outlined"
-                    prepend-inner-icon="mdi-message-text"
-                    density="comfortable"
-                    placeholder="e.g., QUESTION1"
-                  ></v-text-field>
-                </v-col>
-                
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="formData.answers"
-                    label="Answers"
-                    variant="outlined"
-                    rows="4"
-                    prepend-inner-icon="mdi-comment-check"
-                    placeholder="Provide answers or solutions related to this resource"
-                  ></v-textarea>
-                </v-col>
-                
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="formData.resources"
-                    label="Additional Resources"
-                    variant="outlined"
-                    rows="3"
-                    prepend-inner-icon="mdi-folder-open"
-                    placeholder="List any additional resources, links, or references"
-                  ></v-textarea>
                 </v-col>
 
                 <v-col cols="12">
-                  <v-select
-                    v-model="formData.type"
-                    label="Resource Type"
-                    :items="resourceTypes"
+                  <v-textarea
+                    v-model="formData.Body"
+                    label="Body"
+                    :rules="[rules.required]"
                     variant="outlined"
-                    prepend-inner-icon="mdi-tag"
+                    rows="4"
+                    prepend-inner-icon="mdi-text"
+                    placeholder="Provide the main content of the resource"
+                  ></v-textarea>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-select
+                    v-model="formData.Language"
+                    label="Language"
+                    :items="languageOptions"
+                    :rules="[rules.required]"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-translate"
                     density="comfortable"
-                    placeholder="Select resource type"
                   ></v-select>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-switch
+                    v-model="formData.isTrue"
+                    label="Is this information true?"
+                    color="success"
+                    inset
+                    hide-details
+                  ></v-switch>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-text-field
+                    v-model="formData.Multimedia"
+                    label="Multimedia"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-image"
+                    density="comfortable"
+                    placeholder="e.g., image:1VzkETAxxY31FwQy3huUGs_NsVSm8-VFK"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.Source"
+                    label="Source"
+                    :rules="[rules.required]"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-source-branch"
+                    density="comfortable"
+                    placeholder="e.g., redes sociales"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="formData.Links"
+                    label="Links"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-link"
+                    density="comfortable"
+                    placeholder="Enter relevant links"
+                  ></v-text-field>
+                </v-col>
+
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="conversationJson"
+                    label="Conversation (JSON Format)"
+                    variant="outlined"
+                    rows="6"
+                    prepend-inner-icon="mdi-message-text"
+                    placeholder='[{"Messages": [{"Sender": "Sandra", "MessageList": ["..."]}]}]'
+                  ></v-textarea>
                 </v-col>
               </v-row>
             </v-form>
@@ -175,25 +184,24 @@ const loading = ref(false)
 const snackbar = ref(false)
 const snackbarText = ref('')
 const snackbarColor = ref('success')
+const conversationJson = ref('')
 
 const formData = ref({
-  title: '',
-  description: '',
-  country: '',
-  conversationRef: '',
-  answers: '',
-  resources: '',
-  type: ''
+  Headline: '',
+  Body: '',
+  Language: 'es',
+  isTrue: false,
+  Multimedia: '',
+  Source: '',
+  Links: '',
+  Conversation: []
 })
 
-const resourceTypes = [
-  { title: 'Question', value: 'QUESTION' },
-  { title: 'Answer', value: 'ANSWER' },
-  { title: 'Photo', value: 'PHOTO' },
-  { title: 'Video', value: 'VIDEO' },
-  { title: 'Audio', value: 'AUDIO' },
-  { title: 'Document', value: 'DOCUMENT' },
-  { title: 'Other', value: 'OTHER' }
+const languageOptions = [
+  { title: 'Español', value: 'es' },
+  { title: 'English', value: 'en' },
+  { title: 'Français', value: 'fr' },
+  { title: 'Deutsch', value: 'de' }
 ]
 
 const rules = {
@@ -204,16 +212,29 @@ const createResource = async () => {
   if (!form.value.validate()) {
     return
   }
-  
+
   loading.value = true
-  
+
   try {
+    // Parse conversation JSON if provided
+    if (conversationJson.value) {
+      try {
+        formData.value.Conversation = JSON.parse(conversationJson.value)
+      } catch (e) {
+        snackbarText.value = 'Invalid JSON format for Conversation'
+        snackbarColor.value = 'error'
+        snackbar.value = true
+        loading.value = false
+        return
+      }
+    }
+
     const newResource = await contractStore.createContract(formData.value)
-    
+
     snackbarText.value = 'Resource created successfully!'
     snackbarColor.value = 'success'
     snackbar.value = true
-    
+
     setTimeout(() => {
       router.push('/back-office')
     }, 1500)

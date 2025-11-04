@@ -39,40 +39,63 @@
             ></v-text-field>
           </v-card-title>
           
-          <v-data-table
+          <v-data-table-server
             :headers="headers"
             :items="contractStore.contracts"
-            :search="search"
-            :items-per-page="10"
+            :loading="contractStore.loading"
+            :items-length="contractStore.totalItems"
+            v-model:page="page"
+            v-model:items-per-page="itemsPerPage"
+            :items-per-page-options="itemsPerPageOptions"
+            @update:page="handlePageUpdate"
+            @update:items-per-page="handleItemsPerPageUpdate"
             hover
           >
-            <template v-slot:item.title="{ item }">
+            <template v-slot:no-data>
+              <div class="text-center pa-4">
+                <v-icon size="48" color="grey">mdi-file-document-outline</v-icon>
+                <p class="text-h6 mt-2">No resources found</p>
+              </div>
+            </template>
+            <template v-slot:item.Headline="{ item }">
               <div class="text-subtitle-1 font-weight-medium">
-                {{ item.title }}
+                {{ item.Headline }}
               </div>
               <div class="text-caption text-grey">
-                {{ item.description.substring(0, 100) }}...
+                {{ item.Body ? item.Body.substring(0, 100) + '...' : '' }}
               </div>
             </template>
-            
-            <template v-slot:item.createdAt="{ item }">
+
+            <template v-slot:item.Language="{ item }">
               <v-chip
-                color="blue-grey"
+                color="blue"
                 variant="tonal"
                 size="small"
               >
-                {{ formatDate(item.createdAt) }}
+                <v-icon start size="16">mdi-translate</v-icon>
+                {{ item.Language }}
               </v-chip>
             </template>
-            
-            <template v-slot:item.country="{ item }">
+
+            <template v-slot:item.isTrue="{ item }">
               <v-chip
-                color="green"
+                :color="item.isTrue ? 'success' : 'error'"
                 variant="tonal"
                 size="small"
               >
-                <v-icon start size="16">mdi-map-marker</v-icon>
-                {{ item.country }}
+                <v-icon start size="16">{{ item.isTrue ? 'mdi-check-circle' : 'mdi-close-circle' }}</v-icon>
+                {{ item.isTrue ? 'True' : 'False' }}
+              </v-chip>
+            </template>
+
+            <template v-slot:item.Source="{ item }">
+              <v-chip
+                color="purple"
+                variant="tonal"
+                size="small"
+              >
+                <v-icon start size="16">mdi-source-branch</v-icon>
+                {{ item.Source }}
               </v-chip>
             </template>
             
@@ -95,7 +118,7 @@
               >
               </v-btn>
             </template>
-          </v-data-table>
+          </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
@@ -103,22 +126,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { contractStore } from '@/stores/contracts'
 
 const router = useRouter()
 const search = ref('')
+const page = ref(1)
+const itemsPerPage = ref(10)
+const itemsPerPageOptions = [
+  { value: 5, title: '5' },
+  { value: 10, title: '10' },
+  { value: 25, title: '25' },
+  { value: 50, title: '50' },
+  { value: 100, title: '100' }
+]
+
+const loadItems = async () => {
+  const filters = search.value ? { search: search.value } : {}
+  console.log('loadItems called with:', { page: page.value, itemsPerPage: itemsPerPage.value, filters })
+  await contractStore.fetchContracts(page.value, itemsPerPage.value, filters)
+}
+
+const handlePageUpdate = async (newPage) => {
+  console.log('Page updated to:', newPage)
+  // v-model already updates page.value, just load items
+  await loadItems()
+}
+
+const handleItemsPerPageUpdate = async (newItemsPerPage) => {
+  console.log('Items per page updated to:', newItemsPerPage)
+  // v-model already updates itemsPerPage.value
+  page.value = 1 // Reset to first page when changing items per page
+  await loadItems()
+}
+
+// Watch for search changes and reset to page 1
+watch(search, () => {
+  page.value = 1
+  loadItems()
+})
 
 onMounted(async () => {
-  await contractStore.fetchContracts()
+  await loadItems()
 })
 
 const headers = [
-  { title: 'Resource', key: 'title', width: '40%' },
-  { title: 'Country', key: 'country', align: 'center' },
-  { title: 'Reference', key: 'conversationRef', align: 'center' },
-  { title: 'Created', key: 'createdAt', align: 'center' },
+  { title: 'Resource', key: 'Headline', width: '35%' },
+  { title: 'Language', key: 'Language', align: 'center' },
+  { title: 'Status', key: 'isTrue', align: 'center' },
+  { title: 'Source', key: 'Source', align: 'center' },
   { title: 'Actions', key: 'actions', sortable: false, align: 'center', width: '120px' }
 ]
 

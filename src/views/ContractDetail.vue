@@ -34,81 +34,131 @@
           <v-card-title class="bg-primary pa-6">
             <div>
               <v-icon color="white" size="32" class="mr-3">mdi-help-circle</v-icon>
-              <span class="text-h4 text-white">{{ contract.title }}</span>
+              <span class="text-h4 text-white">{{ contract.Headline }}</span>
             </div>
           </v-card-title>
-          
+
           <v-card-text class="pa-6">
             <v-alert
               color="blue-grey"
               variant="tonal"
               class="mb-6"
             >
-              <div class="text-body-1">{{ contract.description }}</div>
+              <div class="text-body-1">{{ contract.Body }}</div>
             </v-alert>
-            
+
             <v-row>
-              <v-col cols="12" md="6">
+              <v-col cols="12" md="4">
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
-                    <v-icon color="green" class="mr-2">mdi-map-marker</v-icon>
-                    <span class="text-subtitle-2 text-grey">Country</span>
+                    <v-icon color="blue" class="mr-2">mdi-translate</v-icon>
+                    <span class="text-subtitle-2 text-grey">Language</span>
                   </div>
-                  <div class="text-h6">{{ contract.country }}</div>
+                  <div class="text-h6">{{ contract.Language }}</div>
                 </v-card>
               </v-col>
-              
-              <v-col cols="12" md="6">
+
+              <v-col cols="12" md="4">
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
-                    <v-icon color="blue" class="mr-2">mdi-message-text</v-icon>
-                    <span class="text-subtitle-2 text-grey">Conversation Reference</span>
+                    <v-icon :color="contract.isTrue ? 'success' : 'error'" class="mr-2">
+                      {{ contract.isTrue ? 'mdi-check-circle' : 'mdi-close-circle' }}
+                    </v-icon>
+                    <span class="text-subtitle-2 text-grey">Status</span>
                   </div>
-                  <div class="text-h6">{{ contract.conversationRef }}</div>
+                  <div class="text-h6">{{ contract.isTrue ? 'True' : 'False' }}</div>
                 </v-card>
               </v-col>
-              
+
+              <v-col cols="12" md="4">
+                <v-card variant="outlined" class="pa-4">
+                  <div class="d-flex align-center mb-3">
+                    <v-icon color="purple" class="mr-2">mdi-source-branch</v-icon>
+                    <span class="text-subtitle-2 text-grey">Source</span>
+                  </div>
+                  <div class="text-h6">{{ contract.Source }}</div>
+                </v-card>
+              </v-col>
+
+              <v-col cols="12" md="6" v-if="contract.Multimedia">
+                <v-card variant="outlined" class="pa-4">
+                  <div class="d-flex align-center mb-3">
+                    <v-icon color="orange" class="mr-2">mdi-image</v-icon>
+                    <span class="text-subtitle-2 text-grey">Multimedia</span>
+                  </div>
+                  <div class="text-body-2">{{ contract.Multimedia }}</div>
+                </v-card>
+              </v-col>
+
+              <v-col cols="12" md="6" v-if="contract.Links">
+                <v-card variant="outlined" class="pa-4">
+                  <div class="d-flex align-center mb-3">
+                    <v-icon color="indigo" class="mr-2">mdi-link</v-icon>
+                    <span class="text-subtitle-2 text-grey">Links</span>
+                  </div>
+                  <a :href="contract.Links" target="_blank" class="text-body-2">{{ contract.Links }}</a>
+                </v-card>
+              </v-col>
+
               <v-col cols="12" md="6">
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
-                    <v-icon color="orange" class="mr-2">mdi-calendar-plus</v-icon>
+                    <v-icon color="teal" class="mr-2">mdi-calendar-plus</v-icon>
                     <span class="text-subtitle-2 text-grey">Created</span>
                   </div>
                   <div class="text-h6">{{ formatDate(contract.createdAt) }}</div>
                 </v-card>
               </v-col>
-              
+
               <v-col cols="12" md="6">
                 <v-card variant="outlined" class="pa-4">
                   <div class="d-flex align-center mb-3">
-                    <v-icon color="purple" class="mr-2">mdi-calendar-edit</v-icon>
+                    <v-icon color="amber" class="mr-2">mdi-calendar-edit</v-icon>
                     <span class="text-subtitle-2 text-grey">Last Updated</span>
                   </div>
                   <div class="text-h6">{{ formatDate(contract.updatedAt) }}</div>
                 </v-card>
               </v-col>
             </v-row>
-            
+
             <v-divider class="my-6"></v-divider>
-            
-            <div v-if="contract.answers">
+
+            <div v-if="contract.Conversation && contract.Conversation.length > 0">
               <div class="d-flex align-center mb-4">
-                <v-icon color="success" size="28" class="mr-2">mdi-comment-check</v-icon>
-                <h3 class="text-h5">Answers</h3>
+                <v-icon color="success" size="28" class="mr-2">mdi-message-text</v-icon>
+                <h3 class="text-h5">Conversation</h3>
               </div>
-              <v-card color="green-lighten-5" variant="flat" class="pa-4">
-                <pre class="text-body-2" style="white-space: pre-wrap; font-family: inherit;">{{ contract.answers }}</pre>
-              </v-card>
-            </div>
-            
-            <div v-if="contract.resources" class="mt-6">
-              <div class="d-flex align-center mb-4">
-                <v-icon color="info" size="28" class="mr-2">mdi-folder-open</v-icon>
-                <h3 class="text-h5">Resources</h3>
-              </div>
-              <v-card color="blue-lighten-5" variant="flat" class="pa-4">
-                <pre class="text-body-2" style="white-space: pre-wrap; font-family: inherit;">{{ contract.resources }}</pre>
-              </v-card>
+              <v-expansion-panels>
+                <v-expansion-panel
+                  v-for="(conversation, idx) in contract.Conversation"
+                  :key="idx"
+                >
+                  <v-expansion-panel-title>
+                    <v-icon class="mr-2">mdi-forum</v-icon>
+                    Conversation {{ idx + 1 }}
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <v-card
+                      v-for="(message, msgIdx) in conversation.Messages"
+                      :key="msgIdx"
+                      class="mb-3"
+                      variant="outlined"
+                    >
+                      <v-card-title class="bg-grey-lighten-4 py-2">
+                        <v-icon size="20" class="mr-2">mdi-account</v-icon>
+                        {{ message.Sender }}
+                      </v-card-title>
+                      <v-card-text class="pa-3">
+                        <ul>
+                          <li v-for="(msg, listIdx) in message.MessageList" :key="listIdx">
+                            {{ msg }}
+                          </li>
+                        </ul>
+                      </v-card-text>
+                    </v-card>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
             </div>
           </v-card-text>
           

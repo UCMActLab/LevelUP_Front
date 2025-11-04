@@ -5,17 +5,57 @@ export const contractStore = reactive({
   contracts: [],
   loading: false,
   error: null,
+  totalItems: 0,
+  currentPage: 1,
+  itemsPerPage: 10,
 
-  async fetchContracts() {
+  async fetchContracts(page = 1, limit = 10, filters = {}) {
     this.loading = true
     this.error = null
     try {
-      const response = await resourceService.getResources()
-      this.contracts = response.data?.data || response || []
+      const response = await resourceService.getResources(filters, page, limit)
+      console.log('Full API Response:', response)
+      console.log('Response structure:', {
+        hasData: !!response.data,
+        hasPagination: !!response.pagination,
+        dataType: Array.isArray(response.data) ? 'array' : typeof response.data,
+        paginationContent: response.pagination
+      })
+
+      // Handle different response formats
+      // Structure: response.data.data = array, response.data.pagination = pagination info
+      if (response.data?.data && Array.isArray(response.data.data)) {
+        this.contracts = response.data.data
+        this.totalItems = response.data.pagination?.totalItems || response.data.data.length || 0
+      } else if (response.data && Array.isArray(response.data)) {
+        // Fallback: data directly in response.data
+        this.contracts = response.data
+        this.totalItems = response.pagination?.totalItems || response.data.length || 0
+      } else if (Array.isArray(response)) {
+        // Fallback: data directly in response
+        this.contracts = response
+        this.totalItems = response.length || 0
+      } else {
+        // Error: unexpected format
+        this.contracts = []
+        this.totalItems = 0
+        console.error('Unexpected response format - data is not an array:', response)
+      }
+
+      console.log('Store state after update:', {
+        contractsCount: this.contracts.length,
+        totalItems: this.totalItems,
+        currentPage: this.currentPage,
+        loading: this.loading
+      })
+
+      this.currentPage = page
+      this.itemsPerPage = limit
     } catch (error) {
       console.error('Error fetching resources:', error)
       this.error = error.message
       this.contracts = []
+      this.totalItems = 0
     } finally {
       this.loading = false
     }

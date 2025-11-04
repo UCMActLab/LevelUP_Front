@@ -4,10 +4,17 @@ class ResourceService {
   /**
    * Get all resources (requires authentication)
    * @param {Object} filters - Optional filters for the resources
-   * @returns {Promise} Array of resources
+   * @param {Number} page - Page number (1-indexed)
+   * @param {Number} limit - Number of items per page
+   * @returns {Promise} Object with data and pagination info
    */
-  async getResources(filters = {}) {
-    return await api.get('/resources', filters)
+  async getResources(filters = {}, page = 1, limit = 10) {
+    const params = {
+      ...filters,
+      page,
+      limit
+    }
+    return await api.get('/resources', params)
   }
 
   /**

@@ -10,7 +10,7 @@ import Login from '@/views/Login.vue'
 const routes = [
   {
     path: '/',
-    redirect: '/back-office'
+    redirect: '/back-office',
   },
   {
     path: '/login',
@@ -22,7 +22,6 @@ const routes = [
     path: '/back-office',
     name: 'contract-list',
     component: ContractList,
-    meta: { requiresAuth: true }
   },
   {
     path: '/back-office/contract/:id',
