@@ -6,7 +6,7 @@
           color="primary"
           variant="tonal"
           prepend-icon="mdi-arrow-left"
-          @click="$router.push('/back-office')"
+          @click="$router.back()"
           class="mb-6"
         >
           Back to Questions
@@ -163,6 +163,15 @@
           </v-card-text>
           
           <v-card-actions class="pa-6 bg-grey-lighten-5">
+            <v-btn
+              color="error"
+              variant="tonal"
+              size="large"
+              prepend-icon="mdi-delete"
+              @click="openDeleteDialog"
+            >
+              Delete
+            </v-btn>
             <v-spacer></v-spacer>
             <v-btn
               color="warning"
@@ -185,6 +194,63 @@
         </v-alert>
       </v-col>
     </v-row>
+
+    <v-dialog
+      v-model="deleteDialog"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="bg-error pa-6">
+          <div class="d-flex align-center">
+            <v-icon color="white" size="32" class="mr-3">mdi-alert-circle</v-icon>
+            <span class="text-h5 text-white">Confirm Delete</span>
+          </div>
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <p class="text-h6 mb-2">Are you sure you want to delete this resource?</p>
+          <p class="text-body-1">
+            <strong>{{ contract?.Headline }}</strong>
+          </p>
+          <p class="text-body-2 text-grey mt-2">This action cannot be undone.</p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="closeDeleteDialog"
+            :disabled="deleting"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            @click="confirmDelete"
+            :loading="deleting"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar
+      v-model="snackbar"
+      :color="snackbarColor"
+      rounded="pill"
+      location="top"
+    >
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -205,6 +271,11 @@ const props = defineProps({
 
 const contract = ref(null)
 const loading = ref(true)
+const deleteDialog = ref(false)
+const deleting = ref(false)
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('success')
 
 onMounted(async () => {
   loading.value = true
@@ -229,5 +300,37 @@ const formatDate = (dateObj) => {
 
 const editContract = () => {
   router.push({ name: 'contract-edit', params: { id: props.id } })
+}
+
+const openDeleteDialog = () => {
+  deleteDialog.value = true
+}
+
+const closeDeleteDialog = () => {
+  deleteDialog.value = false
+}
+
+const confirmDelete = async () => {
+  deleting.value = true
+  try {
+    await contractStore.deleteContract(props.id)
+
+    snackbarText.value = 'Resource deleted successfully!'
+    snackbarColor.value = 'success'
+    snackbar.value = true
+
+    closeDeleteDialog()
+
+    // Redirect to list after successful deletion
+    setTimeout(() => {
+      router.push('/back-office')
+    }, 1500)
+  } catch (error) {
+    console.error('Error deleting resource:', error)
+    snackbarText.value = 'Error deleting resource. Please try again.'
+    snackbarColor.value = 'error'
+    snackbar.value = true
+    deleting.value = false
+  }
 }
 </script>

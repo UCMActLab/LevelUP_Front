@@ -1,5 +1,5 @@
 <template>
-  <div class="game-wrapper">
+  <div ref="gameWrapper" class="game-wrapper">
     <iframe
       ref="unityIframe"
       :src="unityBundlePath"
@@ -47,45 +47,81 @@ import { ref, onMounted, onUnmounted } from 'vue'
 const loading = ref(true)
 const unityBundlePath = ref('/Bundle/index.html')
 const unityIframe = ref(null)
+const gameWrapper = ref(null)
 const isFullscreen = ref(false)
 
 const onUnityLoaded = () => {
   loading.value = false
 }
 
-const toggleFullscreen = () => {
-  if (!document.fullscreenElement) {
-    if (unityIframe.value.requestFullscreen) {
-      unityIframe.value.requestFullscreen()
-    } else if (unityIframe.value.webkitRequestFullscreen) {
-      unityIframe.value.webkitRequestFullscreen()
-    } else if (unityIframe.value.msRequestFullscreen) {
-      unityIframe.value.msRequestFullscreen()
+const toggleFullscreen = async () => {
+  const element = gameWrapper.value
+
+  if (!element) return
+
+  // Check if we're currently in fullscreen
+  const isCurrentlyFullscreen = document.fullscreenElement ||
+                                  document.webkitFullscreenElement ||
+                                  document.mozFullScreenElement ||
+                                  document.msFullscreenElement
+
+  if (!isCurrentlyFullscreen) {
+    // Enter fullscreen
+    try {
+      if (element.requestFullscreen) {
+        await element.requestFullscreen()
+      } else if (element.webkitRequestFullscreen) {
+        // iOS Safari
+        await element.webkitRequestFullscreen()
+      } else if (element.webkitEnterFullscreen) {
+        // Older iOS devices
+        await element.webkitEnterFullscreen()
+      } else if (element.mozRequestFullScreen) {
+        // Firefox
+        await element.mozRequestFullScreen()
+      } else if (element.msRequestFullscreen) {
+        // IE/Edge
+        await element.msRequestFullscreen()
+      }
+    } catch (err) {
+      console.error('Error attempting to enable fullscreen:', err)
     }
   } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen()
-    } else if (document.webkitExitFullscreen) {
-      document.webkitExitFullscreen()
-    } else if (document.msExitFullscreen) {
-      document.msExitFullscreen()
+    // Exit fullscreen
+    try {
+      if (document.exitFullscreen) {
+        await document.exitFullscreen()
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen()
+      } else if (document.mozCancelFullScreen) {
+        await document.mozCancelFullScreen()
+      } else if (document.msExitFullscreen) {
+        await document.msExitFullscreen()
+      }
+    } catch (err) {
+      console.error('Error attempting to exit fullscreen:', err)
     }
   }
 }
 
 const handleFullscreenChange = () => {
-  isFullscreen.value = !!document.fullscreenElement
+  isFullscreen.value = !!(document.fullscreenElement ||
+                           document.webkitFullscreenElement ||
+                           document.mozFullScreenElement ||
+                           document.msFullscreenElement)
 }
 
 onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange)
   document.addEventListener('webkitfullscreenchange', handleFullscreenChange)
+  document.addEventListener('mozfullscreenchange', handleFullscreenChange)
   document.addEventListener('msfullscreenchange', handleFullscreenChange)
 })
 
 onUnmounted(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
   document.removeEventListener('webkitfullscreenchange', handleFullscreenChange)
+  document.removeEventListener('mozfullscreenchange', handleFullscreenChange)
   document.removeEventListener('msfullscreenchange', handleFullscreenChange)
 })
 </script>
