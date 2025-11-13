@@ -55,15 +55,15 @@
                 </v-col>
 
                 <v-col cols="12" md="6">
-                  <v-select
+                  <v-text-field
                     v-model="formData.Language"
                     label="Language"
-                    :items="languageOptions"
                     :rules="[rules.required]"
                     variant="outlined"
                     prepend-inner-icon="mdi-translate"
                     density="comfortable"
-                  ></v-select>
+                    placeholder="es, en, pt, etc"
+                  ></v-text-field>
                 </v-col>
 
                 <v-col cols="12" md="6">
@@ -189,20 +189,13 @@ const conversationJson = ref('')
 const formData = ref({
   Headline: '',
   Body: '',
-  Language: 'es',
+  Language: '',
   isTrue: false,
   Multimedia: '',
   Source: '',
   Links: '',
   Conversation: []
 })
-
-const languageOptions = [
-  { title: 'Español', value: 'es' },
-  { title: 'English', value: 'en' },
-  { title: 'Français', value: 'fr' },
-  { title: 'Deutsch', value: 'de' }
-]
 
 const rules = {
   required: value => !!value || 'Field is required'
