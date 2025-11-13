@@ -6,7 +6,7 @@
           color="primary"
           variant="tonal"
           prepend-icon="mdi-arrow-left"
-          @click="$router.push('/back-office')"
+          @click="$router.back()"
           class="mb-6"
         >
           Back to Questions
@@ -274,6 +274,6 @@ const saveContract = async () => {
 }
 
 const cancel = () => {
-  router.push({ name: 'contract-detail', params: { id: props.id } })
+  router.back()
 }
 </script>

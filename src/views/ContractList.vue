@@ -117,23 +117,97 @@
                 @click="editContract(getItemId(item))"
               >
               </v-btn>
+              <v-btn
+                icon="mdi-delete"
+                color="error"
+                variant="tonal"
+                size="small"
+                class="ml-2"
+                @click="openDeleteDialog(item)"
+              >
+              </v-btn>
             </template>
           </v-data-table-server>
         </v-card>
       </v-col>
     </v-row>
+
+    <v-dialog
+      v-model="deleteDialog"
+      max-width="500"
+    >
+      <v-card>
+        <v-card-title class="bg-error pa-6">
+          <div class="d-flex align-center">
+            <v-icon color="white" size="32" class="mr-3">mdi-alert-circle</v-icon>
+            <span class="text-h5 text-white">Confirm Delete</span>
+          </div>
+        </v-card-title>
+        <v-card-text class="pa-6">
+          <p class="text-h6 mb-2">Are you sure you want to delete this resource?</p>
+          <p class="text-body-1">
+            <strong>{{ itemToDelete?.Headline }}</strong>
+          </p>
+          <p class="text-body-2 text-grey mt-2">This action cannot be undone.</p>
+        </v-card-text>
+        <v-card-actions class="pa-6 pt-0">
+          <v-spacer></v-spacer>
+          <v-btn
+            color="grey"
+            variant="text"
+            @click="closeDeleteDialog"
+            :disabled="deleting"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            variant="elevated"
+            @click="confirmDelete"
+            :loading="deleting"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-snackbar
+      v-model="snackbar"
+      :color="snackbarColor"
+      rounded="pill"
+      location="top"
+    >
+      {{ snackbarText }}
+      <template v-slot:actions>
+        <v-btn
+          variant="text"
+          @click="snackbar = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { contractStore } from '@/stores/contracts'
 
 const router = useRouter()
-const search = ref('')
-const page = ref(1)
-const itemsPerPage = ref(10)
+const route = useRoute()
+const search = ref(route.query.search || '')
+const page = ref(parseInt(route.query.page) || 1)
+const itemsPerPage = ref(parseInt(route.query.itemsPerPage) || 10)
+const deleteDialog = ref(false)
+const itemToDelete = ref(null)
+const deleting = ref(false)
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('success')
+
 const itemsPerPageOptions = [
   { value: 5, title: '5' },
   { value: 10, title: '10' },
@@ -142,10 +216,22 @@ const itemsPerPageOptions = [
   { value: 100, title: '100' }
 ]
 
+const updateQueryParams = () => {
+  const query = {
+    page: page.value.toString(),
+    itemsPerPage: itemsPerPage.value.toString()
+  }
+  if (search.value) {
+    query.search = search.value
+  }
+  router.replace({ query })
+}
+
 const loadItems = async () => {
   const filters = search.value ? { search: search.value } : {}
   console.log('loadItems called with:', { page: page.value, itemsPerPage: itemsPerPage.value, filters })
   await contractStore.fetchContracts(page.value, itemsPerPage.value, filters)
+  updateQueryParams()
 }
 
 const handlePageUpdate = async (newPage) => {
@@ -176,7 +262,7 @@ const headers = [
   { title: 'Language', key: 'Language', align: 'center' },
   { title: 'Status', key: 'isTrue', align: 'center' },
   { title: 'Source', key: 'Source', align: 'center' },
-  { title: 'Actions', key: 'actions', sortable: false, align: 'center', width: '120px' }
+  { title: 'Actions', key: 'actions', sortable: false, align: 'center', width: '180px' }
 ]
 
 const getItemId = (item) => {
@@ -202,5 +288,41 @@ const editContract = (id) => {
 
 const createResource = () => {
   router.push({ name: 'contract-create' })
+}
+
+const openDeleteDialog = (item) => {
+  itemToDelete.value = item
+  deleteDialog.value = true
+}
+
+const closeDeleteDialog = () => {
+  deleteDialog.value = false
+  itemToDelete.value = null
+}
+
+const confirmDelete = async () => {
+  if (!itemToDelete.value) return
+
+  deleting.value = true
+  try {
+    const id = getItemId(itemToDelete.value)
+    await contractStore.deleteContract(id)
+
+    snackbarText.value = 'Resource deleted successfully!'
+    snackbarColor.value = 'success'
+    snackbar.value = true
+
+    closeDeleteDialog()
+
+    // Reload the current page
+    await loadItems()
+  } catch (error) {
+    console.error('Error deleting resource:', error)
+    snackbarText.value = 'Error deleting resource. Please try again.'
+    snackbarColor.value = 'error'
+    snackbar.value = true
+  } finally {
+    deleting.value = false
+  }
 }
 </script>

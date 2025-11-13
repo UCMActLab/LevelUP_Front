@@ -6,7 +6,7 @@
           color="primary"
           variant="tonal"
           prepend-icon="mdi-arrow-left"
-          @click="$router.push('/back-office')"
+          @click="$router.back()"
           class="mb-6"
         >
           Back to Questions
@@ -242,7 +242,7 @@ const createResource = async () => {
 }
 
 const cancel = () => {
-  router.push('/back-office')
+  router.back()
 }
 </script>
 
