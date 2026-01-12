@@ -9,15 +9,15 @@
   </head>
   <body>
     <div id="unity-container" style="width: 100%;height: 100%;">
-      <canvas id="unity-canvas" width=auto height=auto tabindex="-1"></canvas>
+      <canvas id="unity-canvas" width=auto height=auto></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"> </div>
-      <!-- <div id="unity-footer">
+      <!-- <div id="unity-warning"> </div>
+      <div id="unity-footer">
         <div id="unity-logo-title-footer"></div>
         <div id="unity-fullscreen-button"></div>
         <div id="unity-build-title">LevelUp_Game</div>
@@ -52,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/builds.loader.js";
+      var loaderUrl = buildUrl + "/12.01.25.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/builds.data.br",
-        frameworkUrl: buildUrl + "/builds.framework.js.br",
-        codeUrl: buildUrl + "/builds.wasm.br",
+        dataUrl: buildUrl + "/12.01.25.data.br",
+        frameworkUrl: buildUrl + "/12.01.25.framework.js.br",
+        codeUrl: buildUrl + "/12.01.25.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "LevelUp_Game",
