@@ -52,12 +52,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/10.2.26.loader.js";
+      var loaderUrl = buildUrl + "/24.02.26.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/10.2.26.data.br",
-        frameworkUrl: buildUrl + "/10.2.26.framework.js.br",
-        codeUrl: buildUrl + "/10.2.26.wasm.br",
+        dataUrl: buildUrl + "/24.02.26.data.br",
+        frameworkUrl: buildUrl + "/24.02.26.framework.js.br",
+        codeUrl: buildUrl + "/24.02.26.wasm.br",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "LevelUp_Game",
@@ -110,7 +110,7 @@
         createUnityInstance(canvas, config, (progress) => {
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
+                // document.querySelector("#unity-loading-bar").style.display = "none";
                 // document.querySelector("#unity-fullscreen-button").onclick = () => {
                 //   unityInstance.SetFullscreen(1);
                 // };
