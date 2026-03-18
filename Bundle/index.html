@@ -6,19 +6,6 @@
     <title>Unity Web Player | LevelUp_Game</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-        <style>
-        /* This targets the ID and the class Unity uses for that button */
-        #unity-fullscreen-button, 
-        .unity-mobile #unity-fullscreen-button,
-        #unity-footer {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-          pointer-events: none !important;
-          position: absolute;
-          left: -9999px; /* This flings it off-screen just in case */
-        }
-      </style>
   </head>
   <body>
     <div id="unity-container" style="width: 100%; height: 100%;">
@@ -124,9 +111,9 @@
           document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
               }).then((unityInstance) => {
                 document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
+                // document.querySelector("#unity-fullscreen-button").onclick = () => {
+                //   unityInstance.SetFullscreen(1);
+                // };
 
               }).catch((message) => {
                 alert(message);
@@ -135,32 +122,6 @@
 
       document.body.appendChild(script);
 
-    </script>
-    <script>
-      function killUnityButton() {
-        // Find the button by ID
-        const btn = document.getElementById("unity-fullscreen-button");
-        if (btn) {
-          btn.style.display = "none";
-          btn.style.visibility = "hidden";
-          btn.remove();
-          console.log("Fullscreen button intercepted.");
-        }
-      }
-
-      // 1. Run immediately
-      killUnityButton();
-
-      // 2. Run every 100ms for 5 seconds to catch the Unity Loader's injection
-      let count = 0;
-      const killerInterval = setInterval(() => {
-        killUnityButton();
-        count++;
-        if (count > 50) clearInterval(killerInterval);
-      }, 100);
-
-      // 3. Final check when the window finishes loading everything
-      window.addEventListener('load', killUnityButton);
     </script>
   </body>
 </html>
