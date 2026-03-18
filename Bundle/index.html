@@ -114,6 +114,9 @@
                 // document.querySelector("#unity-fullscreen-button").onclick = () => {
                 //   unityInstance.SetFullscreen(1);
                 // };
+                // ADD THIS LINE TO DELETE THE BUTTON FROM THE DOM
+                var fsButton = document.querySelector("#unity-fullscreen-button");
+                if (fsButton) fsButton.remove();
 
               }).catch((message) => {
                 alert(message);
