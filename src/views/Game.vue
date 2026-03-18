@@ -8,15 +8,6 @@
       allow="fullscreen"
       @load="onUnityLoaded"
     />
-    <v-btn
-      v-if="!loading"
-      :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-      color="primary"
-      variant="elevated"
-      class="fullscreen-btn"
-      @click="toggleFullscreen"
-    >
-    </v-btn>
     
     <v-overlay
       v-model="loading"
@@ -145,13 +136,5 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border: none;
-}
-
-.fullscreen-btn {
-  position: absolute;
-  top: 50px;
-  right: 20px;
-  z-index: 10;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
