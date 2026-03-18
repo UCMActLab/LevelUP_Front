@@ -126,5 +126,27 @@
       document.body.appendChild(script);
 
     </script>
+        <script>
+      // This observer watches the unity-container for the button being added
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            // We check if the added element is the fullscreen button
+            if (node.id === 'unity-fullscreen-button' || 
+              (node.classList && node.classList.contains('unity-fullscreen-button'))) {
+              node.style.display = 'none';
+              node.remove(); // This deletes it from the world
+              console.log("Unity Fullscreen Button intercepted and removed.");
+            }
+          });
+        });
+      });
+
+      // Start watching the container
+      const container = document.querySelector("#unity-container");
+      if (container) {
+        observer.observe(container, { childList: true, subtree: true });
+      }
+    </script>
   </body>
 </html>
