@@ -150,7 +150,7 @@ onUnmounted(() => {
 .fullscreen-btn {
   position: absolute;
   top: 20px;
-  right: 20px;
+  left: 20px;
   z-index: 10;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
