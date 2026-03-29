@@ -8,8 +8,9 @@
       allow="fullscreen"
       @load="onUnityLoaded"
     />
+    
     <v-btn
-      v-if="!loading"
+      v-if="!showOverlay"
       :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
       color="primary"
       variant="elevated"
@@ -19,7 +20,7 @@
     </v-btn>
     
     <v-overlay
-      v-model="loading"
+      v-model="showOverlay"
       persistent
       class="align-center justify-center"
     >
@@ -28,14 +29,28 @@
         rounded="lg"
         elevation="8"
       >
-        <v-progress-circular
-          indeterminate
-          size="80"
-          width="6"
-          color="primary"
-        />
-        <h2 class="mt-4 text-h5 font-weight-bold">Loading Unity Game...</h2>
-        <p class="text-subtitle-1 text-grey mt-2">Please wait while we prepare your gaming experience</p>
+        <div v-if="loading">
+          <v-progress-circular
+            indeterminate
+            size="80"
+            width="6"
+            color="primary"
+          />
+          <h2 class="mt-4 text-h5 font-weight-bold">Loading Unity Game...</h2>
+          <p class="text-subtitle-1 text-grey mt-2">Please wait while we prepare your gaming experience</p>
+        </div>
+
+        <div v-else>
+          <h2 class="text-h5 font-weight-bold mb-4">Game is Ready!</h2>
+          <v-btn
+            color="primary"
+            size="x-large"
+            prepend-icon="mdi-play"
+            @click="startGame"
+          >
+            Play in Fullscreen
+          </v-btn>
+        </div>
       </v-card>
     </v-overlay>
   </div>
@@ -45,14 +60,22 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const loading = ref(true)
+const showOverlay = ref(true) // Controls the entire overlay
 const unityBundlePath = ref('/Bundle/index.html')
 const unityIframe = ref(null)
 const gameWrapper = ref(null)
 const isFullscreen = ref(false)
 
 const onUnityLoaded = () => {
+  // Stop loading, but DO NOT try to fullscreen yet
   loading.value = false
-  toggleFullscreen()
+}
+
+const startGame = async () => {
+  // 1. Hide the overlay
+  showOverlay.value = false
+  // 2. We now have a trusted user click, so we can trigger fullscreen safely
+  await toggleFullscreen()
 }
 
 const toggleFullscreen = async () => {
@@ -60,35 +83,28 @@ const toggleFullscreen = async () => {
 
   if (!element) return
 
-  // Check if we're currently in fullscreen
   const isCurrentlyFullscreen = document.fullscreenElement ||
-                                  document.webkitFullscreenElement ||
-                                  document.mozFullScreenElement ||
-                                  document.msFullscreenElement
+                                document.webkitFullscreenElement ||
+                                document.mozFullScreenElement ||
+                                document.msFullscreenElement
 
   if (!isCurrentlyFullscreen) {
-    // Enter fullscreen
     try {
       if (element.requestFullscreen) {
         await element.requestFullscreen()
       } else if (element.webkitRequestFullscreen) {
-        // iOS Safari
         await element.webkitRequestFullscreen()
       } else if (element.webkitEnterFullscreen) {
-        // Older iOS devices
         await element.webkitEnterFullscreen()
       } else if (element.mozRequestFullScreen) {
-        // Firefox
         await element.mozRequestFullScreen()
       } else if (element.msRequestFullscreen) {
-        // IE/Edge
         await element.msRequestFullscreen()
       }
     } catch (err) {
       console.error('Error attempting to enable fullscreen:', err)
     }
   } else {
-    // Exit fullscreen
     try {
       if (document.exitFullscreen) {
         await document.exitFullscreen()
@@ -148,4 +164,11 @@ onUnmounted(() => {
   border: none;
 }
 
+/* Optional: Make sure the floating button stays on top */
+.fullscreen-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10; /* Ensures it sits above the iframe */
+}
 </style>
