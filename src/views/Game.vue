@@ -8,6 +8,15 @@
       allow="fullscreen"
       @load="onUnityLoaded"
     />
+    <v-btn
+      v-if="!loading"
+      :icon="isFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+      color="primary"
+      variant="elevated"
+      class="fullscreen-btn"
+      @click="toggleFullscreen"
+    >
+    </v-btn>
     
     <v-overlay
       v-model="loading"
@@ -43,6 +52,7 @@ const isFullscreen = ref(false)
 
 const onUnityLoaded = () => {
   loading.value = false
+  toggleFullscreen()
 }
 
 const toggleFullscreen = async () => {
@@ -137,4 +147,5 @@ onUnmounted(() => {
   height: 100%;
   border: none;
 }
+
 </style>
