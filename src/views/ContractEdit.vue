@@ -91,7 +91,7 @@
                   label="Theme"
                   :rules="[rules.required]"
                   variant="outlined"
-                  prepend-inner-icon="mdi-translate"
+                  prepend-inner-icon="mdi-tag-outline"
                   density="comfortable"
                   :items="themeOptions"
                   item-title="label"
