@@ -85,7 +85,19 @@
                     hide-details
                   ></v-switch>
                 </v-col>
-
+               <v-col cols="12" md="6">
+                <v-select
+                  v-model="formData.Theme"
+                  label="Theme"
+                  :rules="[rules.required]"
+                  variant="outlined"
+                  prepend-inner-icon="mdi-translate"
+                  density="comfortable"
+                  :items="themeOptions"
+                  item-title="label"
+                  item-value="value"
+                ></v-select>
+              </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="formData.Multimedia"
@@ -208,7 +220,13 @@ const contract = ref(null)
 const loading = ref(true)
 
 const conversationJson = ref('')
-
+const themeOptions = [
+  'General Disinformation',
+  'Science, Climate, and Health',
+  'Scams and Online Security',
+  'Conspiracy Theories',
+  'Artificial Intelligence',
+]
 const formData = ref({
   Headline: '',
   Body: '',
