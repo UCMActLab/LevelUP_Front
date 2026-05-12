@@ -223,8 +223,8 @@ const conversationJson = ref('')
 const themeOptions = [
   'General Disinformation',
   'Science, Climate, and Health',
-  'Scams and Online Security',
-  'Conspiracy Theories',
+  'Scams and online security',
+  'Conspiracy theories',
   'Artificial Intelligence',
 ]
 const formData = ref({
