@@ -102,7 +102,7 @@
                 <v-col cols="12">
                   <v-combobox
                     v-model="formData.ImmediateFeedbacks"
-                    label="Immediate Feedbacks"
+                    label="NegativeImmediate Feedbacks"
                     variant="outlined"
                     prepend-inner-icon="mdi-message-text-fast"
                     density="comfortable"
@@ -112,7 +112,19 @@
                     closable-chips
                   ></v-combobox>
                 </v-col>
-
+                <v-col cols="12">
+                  <v-combobox
+                    v-model="formData.PosImmediateFeedbacks"
+                    label="PositiveImmediate Feedbacks"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-message-text-fast"
+                    density="comfortable"
+                    placeholder="Type a feedback and press Enter"
+                    multiple
+                    chips
+                    closable-chips
+                  ></v-combobox>
+                </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="formData.Multimedia"
