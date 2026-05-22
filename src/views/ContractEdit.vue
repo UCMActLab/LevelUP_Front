@@ -102,7 +102,7 @@
                 <v-col cols="12">
                   <v-combobox
                     v-model="formData.ImmediateFeedbacks"
-                    label="NegativeImmediate Feedbacks"
+                    label="Negative Immediate Feedbacks"
                     variant="outlined"
                     prepend-inner-icon="mdi-message-text-fast"
                     density="comfortable"
@@ -115,7 +115,7 @@
                 <v-col cols="12">
                   <v-combobox
                     v-model="formData.PosImmediateFeedbacks"
-                    label="PositiveImmediate Feedbacks"
+                    label="Positive Immediate Feedbacks"
                     variant="outlined"
                     prepend-inner-icon="mdi-message-text-fast"
                     density="comfortable"
