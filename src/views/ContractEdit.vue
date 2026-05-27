@@ -98,6 +98,33 @@
                   item-value="value"
                 ></v-select>
               </v-col>
+
+                <v-col cols="12">
+                  <v-combobox
+                    v-model="formData.ImmediateFeedbacks"
+                    label="Negative Immediate Feedbacks"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-message-text-fast"
+                    density="comfortable"
+                    placeholder="Type a feedback and press Enter"
+                    multiple
+                    chips
+                    closable-chips
+                  ></v-combobox>
+                </v-col>
+                <v-col cols="12">
+                  <v-combobox
+                    v-model="formData.PosImmediateFeedbacks"
+                    label="Positive Immediate Feedbacks"
+                    variant="outlined"
+                    prepend-inner-icon="mdi-message-text-fast"
+                    density="comfortable"
+                    placeholder="Type a feedback and press Enter"
+                    multiple
+                    chips
+                    closable-chips
+                  ></v-combobox>
+                </v-col>
                 <v-col cols="12">
                   <v-text-field
                     v-model="formData.Multimedia"
@@ -232,6 +259,8 @@ const formData = ref({
   Body: '',
   Language: '',
   isTrue: false,
+  Themes: '',
+  ImmediateFeedbacks: [],
   Multimedia: '',
   Source: '',
   Links: '',
@@ -248,6 +277,10 @@ onMounted(async () => {
     contract.value = await contractStore.getContractById(props.id)
     if (contract.value) {
       formData.value = { ...contract.value }
+      // Ensure ImmediateFeedbacks is always an array
+      if (!Array.isArray(formData.value.ImmediateFeedbacks)) {
+        formData.value.ImmediateFeedbacks = []
+      }
       // Convert Conversation array to JSON string for editing
       if (contract.value.Conversation && Array.isArray(contract.value.Conversation)) {
         conversationJson.value = JSON.stringify(contract.value.Conversation, null, 2)
